@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>바둑 게임</title>
+  <style>
+    #board {
+      position: absolute;
+      width: 570px;
+      height: 570px;
+      left: calc(50% - 300px);
+      top: calc(50% - 300px);
+      background: url(스크린샷 2022-03-20 오전 2.12.png);
+      border: 1px solid black;
+      display: grid;
+      grid-template-columns: repeat(19, 1fr);
+      grid-template-rows: repeat(19, 1fr);
+      background-color: #FFDAB9; /* Apricot */
+    }
+
+    .cell {
+      border: 1px solid black;
+      position: relative;
+    }
+
+    .black-stone {
+      position: absolute;
+      width: 26px;
+      height: 26px;
+      left: calc(50% - 13px);
+      top: calc(50% - 13px);
+      background: #000000;
+      border-radius: 50%;
+    }
+
+    .white-stone {
+      position: absolute;
+      width: 26px;
+      height: 26px;
+      left: calc(50% - 13px);
+      top: calc(50% - 13px);
+      background: #FFFFFF;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+  <div id="board"></div>
+
+  <script>
+    // 19x19 바둑판 생성
+    function createBoard() {
+      const board = document.getElementById('board');
+
+      for (let i = 0; i < 19; i++) {
+        for (let j = 0; j < 19; j++) {
+          const cell = document.createElement('div');
+          cell.classList.add('cell');
+          cell.addEventListener('click', () => placeStone(i, j));
+          board.appendChild(cell);
+        }
+      }
+    }
+
+    // 흑과 백 돌 번갈아가며 놓기
+    let currentPlayer = 'black';
+    function placeStone(row, col) {
+      const cell = document.querySelector(`#board > div:nth-child(${row * 19 + col + 1})`);
+
+      if (cell.textContent === '') {
+        cell.textContent = currentPlayer === 'black' ? '●' : '○';
+        const stone = document.createElement('div');
+        stone.classList.add(currentPlayer === 'black' ? 'black-stone' : 'white-stone');
+        cell.appendChild(stone);
+        if (checkWin(row, col)) {
+          disableBoard();
+          alert(currentPlayer + ' 승리!');
+        } else {
+          currentPlayer = currentPlayer === 'black' ? 'white' : 'black';
+        }
+      }
+    }
+
+    // 승리 조건 체크
+    function checkWin(row, col) {
+      const directions = [
+        [-1, 0],  // 상
+        [-1, 1],  // 우상 대각선
+        [0, 1],   // 우
+        [1, 1],   // 우하 대각선
+        [1, 0],   // 하
+        [1, -1],  // 좌하 대각선
+        [0, -1],  // 좌
+        [-1, -1]  // 좌상 대각선
+      ];
+
+      const currentCell = document.querySelector(`#board > div:nth-child(${row * 19 + col + 1})`);
+
+      for (let direction of directions) {
+        let count = 1;
+        const [dx, dy] = direction;
+
+        // 현재 돌 기준으로 같은 색 돌이 연속해서 다섯 개 있는지 체크
+        for (let i = 1; i < 5; i++) {
+          const newRow = row + dx * i;
+          const newCol = col + dy * i;
+
+          if (newRow >= 0 && newRow < 19 && newCol >= 0 && newCol < 19) {
+            const neighborCell = document.querySelector(`#board > div:nth-child(${newRow * 19 + newCol + 1})`);
+
+            if (neighborCell.textContent === currentCell.textContent) {
+              count++;
+            } else {
+              break;
+            }
+          } else {
+            break;
+          }
+        }
+
+        // 같은 색 돌이 다섯 개 이상 연속으로 있을 경우 승리
+        if (count >= 5) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    // 보드 비활성화
+    function disableBoard() {
+      const cells = document.querySelectorAll('.cell');
+      for (let cell of cells) {
+        cell.removeEventListener('click', placeStone);
+      }
+    }
+
+    // 바둑판 생성
+    createBoard();
+  </script>
+</body>
+</html>
